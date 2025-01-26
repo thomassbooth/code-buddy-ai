@@ -1,0 +1,30 @@
+repos:
+  # TypeScript/Frontend Hooks
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.50.0  # Update to the latest version of ESLint
+    hooks:
+      - id: eslint
+        args: [--fix]
+        files: ^code-buddy-fe/.*\.(ts|tsx|js|jsx)$  # Target TypeScript/JavaScript files in the frontend directory
+
+  # Go/Backend Hooks
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+    - id: go-vet
+      name: go vet
+      entry: bash -c "cd code-buddy-be && go vet ./..."
+      language: system
+      types: [go]
+
+  # Python/Consumer Hooks
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.10
+        args:
+          - --config
+          - ./pyproject.toml
+          - --check
+        files: ^code-buddy-consumers/.*\.py$  # Target Python files in the consumers directory

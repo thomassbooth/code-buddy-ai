@@ -1,26 +1,27 @@
-// code-buddy-consumer/main.go
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/segmentio/kafka-go"
+	"github.com/thomassbooth/code-buddy-be/internal/server"
 )
 
 func main() {
-    conn, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", "my-topic", 0)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer conn.Close()
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	server := server.NewServer()
+	go func() {
+		if err := server.Start(); err != nil {
+			// this closes our application on Fatal error
+			log.Fatalf("Server failed to start: %v", err)
+		}
+	}()
 
-    for {
-        message, err := conn.ReadMessage(1e3)
-        if err != nil {
-            log.Fatal(err)
-        }
-        fmt.Println("Received:", string(message.Value))
-    }
+	sig := <-signals
+	log.Printf("Received signal: %v. Shutting down...", sig)
+	server.Close()
+
 }
